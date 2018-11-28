@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>lol stats</title>
+    <link rel="stylesheet" href="">
+</head>
+<body>
+
+
+
+<script src="jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+        var key = "RGAPI-0d3c05b3-5098-49cd-932c-65a9227a21e9";
+        $.ajax({
+            method: "GET",
+            url: "https://br1.api.riotgames.com/lol/summoner/v3/summoners/by-name/Falco0N?api_key=" + key,
+            success: function(data){
+                console.log("success");
+                console.log(data);
+            },
+            error: function(err){
+                console.log("error");
+                console.log(err);
+            }
+        })
+    });
+</script>
+
+</body>
+</html>
