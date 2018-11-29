@@ -5,29 +5,72 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>lol stats</title>
     <link rel="stylesheet" href="">
+    <style>
+        .warning{ color: red; }
+    </style>
 </head>
 <body>
 
+    Username: <input type="text" id="username" name="username" />
+    <button id="send">Enviar</button>
 
+    <br />
 
-<script src="jquery.min.js" type="text/javascript" charset="utf-8"></script>
-<script type="text/javascript" charset="utf-8">
-    $(document).ready(function(){
-        var key = "RGAPI-0d3c05b3-5098-49cd-932c-65a9227a21e9";
-        $.ajax({
-            method: "GET",
-            url: "https://br1.api.riotgames.com/lol/summoner/v3/summoners/by-name/Falco0N?api_key=" + key,
-            success: function(data){
-                console.log("success");
-                console.log(data);
-            },
-            error: function(err){
-                console.log("error");
-                console.log(err);
+    <span class="warning"></span>
+
+    <br /><br />
+
+    <div id="info"></div>
+
+    <script src="jquery.min.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+        
+        var key = "";
+        var $username = $("#username");
+        var $warning = $(".warning");
+
+        function getUserInfo(username){
+            console.log(username);
+            $.ajax({
+                method: "GET",
+                url: "https://br1.api.riotgames.com/lol/summoner/v3/summoners/by-name/" + username + "?api_key=" + key,
+                success: function(data){
+                    console.log("success");
+                    console.log(data);
+
+                    return data;
+                },
+                error: function(err){
+                    console.log("error");
+                    console.log(err);
+                    warn("Ops! Ocorreu um erro: " + err.statusText)
+                    return err;
+                }
+            });
+        }
+
+        function warn(msg){
+            $warning.html(msg);
+        }
+
+        $("#send").on("click", function(e){
+
+            e.preventDefault();
+
+            console.log("-----");
+            console.log($username.val());
+
+            if($username.val().trim() != ""){
+                warn("");
+                getUserInfo($username.val());
+            } else {
+                warn("Preencha o campo 'username'");
             }
-        })
-    });
-</script>
+
+
+        });
+
+    </script>
 
 </body>
 </html>
