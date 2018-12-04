@@ -19,6 +19,7 @@
         #info .wrapper{
             border: 1px solid red;
             padding: 10px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -62,6 +63,8 @@
         var $sumLvl = $("#sumLvl");
         var $info = $("#info");
         var champions = [];
+
+        var version = "";
         
         getChampions();
 
@@ -73,12 +76,14 @@
                 success: function(data){
 
                     console.log(data);
+
                     // GET DDRAGON LATEST ID
                     $.ajax({
                         method: "GET",
                         url: "http://ddragon.leagueoflegends.com/api/versions.json",
-                        success: function(res){
-                            $profileImg.attr("src", "http://ddragon.leagueoflegends.com/cdn/" + res[0] + "/img/profileicon/" + data.profileIconId + ".png");
+                        success: function(versions){
+                            version = versions[0];
+                            $profileImg.attr("src", "http://ddragon.leagueoflegends.com/cdn/" + version + "/img/profileicon/" + data.profileIconId + ".png");
                         }
                     });
 
@@ -104,24 +109,29 @@
 
                             $.each(info_obj, function(i, el){
 
-                                for (property in filterObjectProperties(champions, function(e){return e.key == el.champion})){
-                                    champ_name = property;
-                                }
+                                champ_name = getChampionName(el.champion);
 
                                 $.ajax({
                                     method: "GET",
                                     url: host + "lol/match/v3/matches/" + el.gameId + "?api_key=" + key,
                                     success: function(resp){
+                                        
+                                        var gameDuration = resp.gameDuration;
+                                        
+                                        html += "<div class='wrapper'>";
+
+                                        for (var n = 0; n < resp.participants.length; n++) {
+                                            html += getChampionImg(getChampionName(resp.participants[n].championId));
+                                        }
+
                                         console.log(resp);
+                                        
+                                        html += "</div>";
+
+                                        $info.html(html);
                                     }
                                 });
-
-                                html += "<div class='wrapper'>";
-                                html += "<img src='http://ddragon.leagueoflegends.com/cdn/6.24.1/img/champion/" + champ_name + ".png' width='80px' height='80px' />";
-                                html += "</div>";
-                            });
-
-                            $info.html(html);
+                            });                            
 
                             return info_obj;
                         }
@@ -138,6 +148,18 @@
                     return err;
                 }
             });
+        }
+
+        function getChampionName(champ_id){
+            champ_name = "";
+            for (property in filterObjectProperties(champions, function(e){return e.key == champ_id})){
+                champ_name = property;
+            }
+            return champ_name;
+        }
+
+        function getChampionImg(champ_name){
+            return "<img src='http://ddragon.leagueoflegends.com/cdn/6.24.1/img/champion/" + champ_name + ".png' width='80px' height='80px' />"
         }
 
         function filterObjectProperties(obj, filtercb){
