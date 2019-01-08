@@ -4,220 +4,37 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>lol stats</title>
-    <link rel="stylesheet" href="">
-    <style>
-        html, body{ margin:0; padding:0; }
-        body{ text-align: center; margin-top:50px; }
-        .warning{ color: red }
-        #profileImg{ border-radius: 50% }
-        .container{
-            position: relative;
-            max-width: 1000px;
-            width: 100%;
-            margin: 0 auto;
-        }
-        #info .wrapper{
-            border: 1px solid red;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/fonts.css" />
+    <link rel="stylesheet" href="css/main.css" />
 </head>
 <body>
 
-    <div class="container">
-        <img src="none.png" alt="" id="profileImg" width="128" height="128">
-        <br />
-        Summoner lvl <span id="sumLvl">?</span>
+    <div class="full">
+        <div class="container">
+            <div class="header">
+                <img src="none.png" alt="" id="profileImg" width="128" height="128">
+                <br />
+                Summoner lvl <span id="sumLvl">?</span>
 
-        <br /><br />
+                <br /><br />
 
-        Username: <input type="text" id="username" name="username" />
-        <button id="send">Enviar</button>
-
-        <br />
-
-        <span class="warning"></span>
-
-        <br /><br />
-
-        <div id="info">
-            
-            <div class="wrapper">
-                <img src='http://ddragon.leagueoflegends.com/cdn/6.24.1/img/champion/Zilean.png' width='80px' height='80px' />
+                Username <input type="text" id="username" name="username" />
+                <button id="send">Enviar</button>
             </div>
 
+            <br />
+
+            <span class="warning"></span>
+
+            <br /><br />
+
+            <div id="info">
+            </div>
         </div>
     </div>
 
     <script src="jquery.min.js" type="text/javascript" charset="utf-8"></script>
-    <script type="text/javascript" charset="utf-8">
-        
-        var host = "https://br1.api.riotgames.com/";
-
-        var key = "RGAPI-291e7346-9dfe-4156-bc98-995914a4a509";
-        var $username = $("#username");
-        var $warning = $(".warning");
-        var $profileImg = $("#profileImg");
-        var $btnSend = $("#send");
-        var $sumLvl = $("#sumLvl");
-        var $info = $("#info");
-        var champions = [];
-
-        var version = "";
-        
-        getChampions();
-
-        function getUserInfo(username){
-
-            $.ajax({
-                method: "GET",
-                url: host + "lol/summoner/v3/summoners/by-name/" + username + "?api_key=" + key,
-                success: function(data){
-
-                    console.log(data);
-
-                    // GET DDRAGON LATEST ID
-                    $.ajax({
-                        method: "GET",
-                        url: "http://ddragon.leagueoflegends.com/api/versions.json",
-                        success: function(versions){
-                            version = versions[0];
-                            $profileImg.attr("src", "http://ddragon.leagueoflegends.com/cdn/" + version + "/img/profileicon/" + data.profileIconId + ".png");
-                        }
-                    });
-
-                    $.ajax({
-                        method: "GET",
-                        url: host + "lol/match/v3/matchlists/by-account/" + data.accountId + "?api_key=" + key,
-                        success: function(res){
-
-                            var info_obj = [];
-                            var html = "";
-                            var champ_name = "";
-
-                            for (var i = 0; i < 20; i++) {
-                                info_obj.push({
-                                    "champion" : res.matches[i].champion,
-                                    "gameId" : res.matches[i].gameId,
-                                    "lane" : res.matches[i].lane,
-                                    "role" : res.matches[i].role,
-                                    "time" : convertTimestamp(res.matches[i].timestamp)
-                                })
-                            }
-                            console.log(res.matches[i]);
-
-                            $.each(info_obj, function(i, el){
-
-                                champ_name = getChampionName(el.champion);
-
-                                $.ajax({
-                                    method: "GET",
-                                    url: host + "lol/match/v3/matches/" + el.gameId + "?api_key=" + key,
-                                    success: function(resp){
-                                        
-                                        var gameDuration = resp.gameDuration;
-                                        
-                                        html += "<div class='wrapper'>";
-
-                                        for (var n = 0; n < resp.participants.length; n++) {
-                                            html += getChampionImg(getChampionName(resp.participants[n].championId));
-                                        }
-
-                                        console.log(resp);
-                                        
-                                        html += "</div>";
-
-                                        $info.html(html);
-                                    }
-                                });
-                            });                            
-
-                            return info_obj;
-                        }
-                    });
-
-                    $sumLvl.html(data.summonerLevel);
-
-                    // /lol/match/v3/matches/{matchId} 
-                },
-                error: function(err){
-                    console.log("error");
-                    console.log(err);
-                    warn("Ops! Ocorreu um erro: " + err.statusText);
-                    return err;
-                }
-            });
-        }
-
-        function getChampionName(champ_id){
-            champ_name = "";
-            for (property in filterObjectProperties(champions, function(e){return e.key == champ_id})){
-                champ_name = property;
-            }
-            return champ_name;
-        }
-
-        function getChampionImg(champ_name){
-            return "<img src='http://ddragon.leagueoflegends.com/cdn/6.24.1/img/champion/" + champ_name + ".png' width='80px' height='80px' />"
-        }
-
-        function filterObjectProperties(obj, filtercb){
-            var ret = {};
-            for(var p in obj)
-                if(obj.hasOwnProperty(p))
-                    if(filtercb(obj[p]))
-                        ret[p] = obj[p];
-            return ret;
-        }
-
-        function getChampions(){
-            $.ajax({
-                method: "GET",
-                url: "http://ddragon.leagueoflegends.com/cdn/6.24.1/data/en_US/champion.json",
-                success: function(data){
-                    champions = data.data;
-                    console.log(champions);
-                },
-                error: function(){
-                    console.log("Err: Cannot get champion list!");
-                    warn("Ops! Ocorreu um erro, tente novamente mais tarde");
-                }
-            });
-        }
-
-        function convertTimestamp(timestamp){
-            var date = new Date(timestamp * 1000);
-            var hours = date.getHours();
-            var minutes = "0" + date.getMinutes();
-            var seconds = "0" + date.getSeconds();
-
-            return hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-        }
-
-        function warn(msg){
-            $warning.html(msg);
-        }
-
-        $("#send").on("click", function(e){
-
-            e.preventDefault();
-
-            if($username.val().trim() != ""){
-                warn("");
-                getUserInfo($username.val());
-            } else {
-                warn("Preencha o campo 'username'");
-            }
-        });
-
-        $(document).on("keyup", function(e){
-            if(e.which == 13 && $username.is(":focus")){ // ENTER
-                $btnSend.click();
-            }
-        });
-
-    </script>
+    <script src="js/app.js" type="text/javascript" charset="utf-8"></script>
 
 </body>
 </html>
